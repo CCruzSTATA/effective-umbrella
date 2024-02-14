@@ -1,0 +1,47 @@
+*****************************************************
+** Universidad de los Andes - Facultad de Economía **
+** 			   *Taller econometria 2               **
+** 			   						               **
+** 			   Cristhian Acosta-Pardo              **
+** 				Miguel Garzón-Ramírez       	   **
+**		ddD									       **
+** Estudiante: Carlos Cruz	       201924894       **
+**		       Alejandro Monsalve  201913329       **
+**								                   **
+*****************************************************
+
+cls
+clear all
+
+cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata
+
+use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata/salario_pto1.dta
+
+br 
+
+* Tratamiento es haber estudiado en un colegio bilingue
+* Modelo y_i = gamma x colegio_b_i + XB + E_i
+
+*ATE
+
+*1.aa.	Estime el efecto promedio del tratamiento (ATE) a partir del modelo 1 e interprete los resultados. 
+
+*1.a/R 
+
+* Queremos saber el promedio de salarios
+mean salario , over(colegiob)
+
+display 50401.21 - 13198.75
+* tengan en cuenta que en este comando se está restando el potencial output mean del 87 al potencial output mean del 77
+
+*Test para diferencia de medias, el cual indica la significancia estadística.
+ttest salario , by(colegiob)
+* tengan en cuenta que en este comando se está restando el potencial output mean del 87 al potencial output mean del 77
+* también pueden utilizar una regresión lineal: 
+reg salario i.colegiob edad exper 
+* Y por último, pero no menos relevante, existe la opción del comando teffects, el cual ha tenido un gran desarrollo en las últimas versiones de Stata y es altamente recomendado.
+teffects ra (salario) (colegiob)
+* Tengan en cuenta que este tipo de datos nos proveen la capacidad de ver a los individuos antes y después del tratamiento. Este tipo de datos (paneldata) permite identificar de mejor forma los efectos causales, siempre y cuando se cumplan supuestos específicos, ¿cuáles son?
+
+*B. Aleatorio, no haya error de medición, que se cumplan MLR del 1 al 4, ceteris paribus, sin variable omitida, ¿Como sabemos que son iguales inicialmente?
+
