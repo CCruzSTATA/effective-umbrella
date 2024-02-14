@@ -1,0 +1,41 @@
+//tambien se puede utilizar una regresión o un teffects,
+	reg salario i.colegiob edad exper 
+	teffects ra (salario) (colegiob)
+//b.R/
+
+
+********************** 2 Punto **********************
+	clear all
+	cls
+	cd "C:\Users\ZenBook Flip\Documents\Uniandes Cursos\2024-1\E2\Taller 1"
+	use Punto2
+//a.R/
+//lin-lin:
+	rename (income educ age exper) (salario educacion edad experiencia)
+	reg salario edad educacion experiencia
+	outreg2 using Reg2a.doc, title("Modelos lin-lin , log-log , log-lin sobre salario") replace ctitle(lin-lin) 
+//log-log:
+	reg lincome lage leduc lexper
+	outreg2 using Reg2a.doc, append ctitle(log-log)
+//log-lin:
+	reg lincome edad educacion experiencia
+	outreg2 using Reg2a.doc, append ctitle(log-lin)
+	shellout "Reg2a.doc" 
+//b.R/
+	pwcorr exam edad educacion experiencia, star(0.05)
+//c.R/	Se peuede correer una regresión del modelo sin la edad, lo cual hará que los estimadores sean insesgados e inconsistentes frente a los anteriores (Var. relevante omitida), tal que:
+	reg salario educacion experiencia
+// ó un estat vif (meh)
+	estat vif
+	reg salario edad educacion experiencia
+	estat vif
+******* 2.1 Punto *********
+// 
+
+
+
+//Para la significancia conjunta:
+testparm lincome1 edad2 educacion experiencia , df()
+test lincome lage leduc lexper
+test salario edad educacion experiencia
+//2.b)R/
