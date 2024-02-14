@@ -45,4 +45,42 @@ teffects ra (salario) (colegiob)
 
 *B. Aleatorio, no haya error de medición, que se cumplan MLR del 1 al 4, ceteris paribus, sin variable omitida, ¿Como sabemos que son iguales inicialmente?
 
-aaaaaaaaaa
+*****************************************************
+** Universidad de los Andes - Facultad de Economía **
+** 			   *Taller econometria 2               **
+** 			   						               **
+** 			   Cristhian Acosta-Pardo              **
+** 				Miguel Garzón-Ramírez       	   **
+**											       **
+** Estudiante: Carlos Cruz	       201924894       **
+**		       Alejandro Monsalve  201913329       **
+**								                   **
+*****************************************************
+
+cls
+clear all
+
+cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata
+
+use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata/Punto2.dta
+
+br
+
+
+
+*PUNTO 2
+//2.a)R/
+//lin-lin:
+rename (income educ age exper) (salario educacion edad experiencia)
+reg salario edad educacion experiencia
+outreg2 using myreg.doc, replace ctitle(lin-lin)
+
+//log-log:
+reg lincome lage leduc lexper
+outreg2 using myreg.doc, append ctitle(log-log)
+
+//log-lin:
+reg lincome edad educacion experiencia
+outreg2 using myreg.doc, append ctitle(log-lin) 
+
+
