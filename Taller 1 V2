@@ -1,8 +1,21 @@
+**************Taller #1 Econometría 2*****************
+		**Alejandro Monsalve Correa -201913320**
+		**Carlos Cruz - 201924894**
+****************************************************
+	cls
+	clear all
+	cd "C:\Users\ZenBook Flip\Documents\Uniandes Cursos\2024-1\E2\Taller 1"
+*************** 1 punto ******************************
+	use salario_pto1
+//a.R/ bilingue vs no bilingue: algún efecto? Se hace el ATE manualmente, como a través de un comando, y se obtiene 37202.46:
+	mean(salario), over(colegiob)
+	display 50401.21 - 13198.75 
+	ttest salario, by(colegiob)
 //tambien se puede utilizar una regresión o un teffects,
 	reg salario i.colegiob edad exper 
 	teffects ra (salario) (colegiob)
 //b.R/
-
+//falta hacerlo//
 
 ********************** 2 Punto **********************
 	clear all
