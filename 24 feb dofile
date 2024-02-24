@@ -1,0 +1,146 @@
+*****************************************************
+** Universidad de los Andes - Facultad de Economía **
+** 			   *Taller econometria 2               **
+** 			   						               **
+** 			                                 	   **
+**											       **
+** Estudiante: Carlos Cruz	       201924894       **
+**		       Alejandro Monsalve  201913329       **
+**								                   **
+*****************************************************
+
+cls
+clear all
+cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata
+use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata/salario_pto1.dta
+br 
+
+* Tratamiento es haber estudiado en un colegio bilingue
+* Modelo y_i = gamma x colegio_b_i + XB + E_i
+
+*ATE
+*1.a.	Estime el efecto promedio del tratamiento (ATE) a partir del modelo 1 e interprete los resultados. 
+
+*1.a/R 
+
+* Queremos saber el promedio de salarios
+mean salario , over(colegiob)
+
+display 50401.21 - 13198.75
+* ate simplre
+
+*Test para diferencia de medias, el cual indica la significancia estadística.
+asdoc ttest salario , by(colegiob)
+asdoc ttest edad, by(colegiob) 
+asdoc ttest exper, by(colegiob) 
+asdoc ttest edad, by(colegiob) 
+asdoc ttest padreb, by(colegiob)
+asdoc ttest educ, by(colegiob)
+
+* también pueden utilizar una regresión lineal: 
+reg salario i.colegiob edad exper 
+
+* Y por último, pero no menos relevante, existe la opción del comando teffects, el cual ha tenido un gran desarrollo en las últimas versiones de Stata y es altamente recomendado.
+teffects ra (salario) (colegiob)
+* Tengan en cuenta que este tipo de datos nos proveen la capacidad de ver a los individuos antes y después del tratamiento. Este tipo de datos (paneldata) permite identificar de mejor forma los efectos causales, siempre y cuando se cumplan supuestos específicos, ¿cuáles son?
+
+*B.r/
+
+*g.	Plantee las ecuaciones de la primera y segunda etapa del enfoque de variables instrumentales. Nota: Sea claro en la notación que va a utilizar.
+
+reg colegiob padreb edad exper educ
+	predict padreb_hat, xb
+reg salario padreb_hat edad exper educ
+
+
+asdoc ivregress 2sls salario (colegiob= padreb) edad exper educ, first
+
+	
+*GPT
+
+/// Estimar el modelo IV y almacenar los resultados
+ivregress 2sls salario (colegiob = padreb) edad exper educ, first
+est store ivregress_resultados_iv
+
+// Estimar el modelo de regresión lineal simple
+reg salario colegiob edad exper educ
+est store ivregress_resultados_simple
+
+// Realizar el test de Hausman comparando los dos modelos
+asdoc hausman ivregress_resultados_iv ivregress_resultados_simple
+
+asdoc corr padreb colegiob
+
+iv regress salario (colegiob = padreb)
+
+*****************************************************
+** Universidad de los Andes - Facultad de Economía **
+** 			   *Taller econometria 2               **
+** 			   						               **
+** 			                                 	   **
+**											       **
+** Estudiante: Carlos Cruz	       201924894       **
+**		       Alejandro Monsalve  201913329       **
+**								                   **
+*****************************************************
+
+cls
+clear all
+cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata
+use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller1stata/Punto2.dta
+br
+
+*PUNTO 2
+//2.a)R/
+//lin-lin:
+rename (income educ age exper) (salario educacion edad experiencia)
+reg salario edad educacion experiencia
+outreg2 using myreg.doc, replace ctitle(lin-lin)
+
+//log-log:
+reg lincome lage leduc lexper
+outreg2 using myreg.doc, append ctitle(log-log)
+
+//log-lin:
+reg lincome edad educacion experiencia
+outreg2 using myreg.doc, append ctitle(log-lin) 
+shellout "Reg2a.doc" 
+
+//b.R/
+	pwcorr exam edad educacion experiencia, star(0.05)
+//c.R/	Se peuede correer una regresión del modelo sin la educación, lo cual hará que los estimadores sean insesgados e inconsistentes frente a los anteriores (Var. relevante omitida), tal que:
+	
+	reg salario edad experiencia
+	reg salario edad educacion experiencia
+	
+	test salario educacion experiencia
+	testsalario edad experiencia
+******* 2.1 Punto *********
+// 
+
+//Para la significancia conjunta:
+testparm lincome1 edad2 educacion experiencia , df()
+test lincome lage leduc lexper
+test salario edad educacion experiencia
+//2.b)R/
+
+*y_i = gamma x colegio_b_i + E_i
+
+use /colegios_puerto_asis.dta, replace 
+
+reg desercion2022 i.refuerzos
+
+
+*Crea una variable con base a números aleatorios a las observaciones y ordénala
+
+set seed 8
+gen n_aleat = runiform()
+egen orden = rank(n_aleat)
+gen var_permutada  = refuerzos[orden]
+count if var_permutada == 1
+rename var_permutada Dperm
+label var Dperm "Placebo"
+reg desercion2022 Dperm
+
+
+	
