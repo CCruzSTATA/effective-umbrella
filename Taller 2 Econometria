@@ -1,1 +1,17 @@
+*****************************************************
+** Universidad de los Andes - Facultad de Economía **
+** 			   *Taller 2 econometria 2               **
+** 			   						               **
+** 			                                 	   **
+**											       **
+** Estudiante: Carlos Cruz	       201924894       **
+**		       Alejandro Monsalve  201913329       **
+**								                   **
+*****************************************************
+
+cls
+clear all
+cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller2stata
+use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller2stata/
+br 
 
