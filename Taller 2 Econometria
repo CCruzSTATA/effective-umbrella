@@ -1,6 +1,6 @@
 *****************************************************
 ** Universidad de los Andes - Facultad de Economía **
-** 			   *Taller 2 econometria 2               **
+** 			   *Taller 2 econometria 2             **
 ** 			   						               **
 ** 			                                 	   **
 **											       **
@@ -8,10 +8,107 @@
 **		       Alejandro Monsalve  201913329       **
 **								                   **
 *****************************************************
+**Queremos ver el efecto de facilitar el registro anres de las votaciones
+**Hipotesis 1
+**Hipotesis 2
+****Limpieza de la base 
 
 cls
 clear all
-cd /Users/carloscruz/Desktop/ECONOMETRIA2/Taller2stata
-use /Users/carloscruz/Desktop/ECONOMETRIA2/Taller2stata/
-br 
+cd "/Users/carloscruz/Desktop/ECONOMETRIA2/TALLER2STATA"
+use "/Users/carloscruz/Desktop/ECONOMETRIA2/TALLER2STATA/Elecciones japon 2.dta", clear
+br
 
+keep nacimiento fecha Q22_1 Q22_2 Q22_3 Q22_4 Q22_5 Q22_6 Q17_1 Q17_2 Q17_3 Q17_4 Q17_5 Q17_6 Q17_7
+							
+gen Veces_participacion = Q22_1 + Q22_2 + Q22_3 + Q22_4 + Q22_5 + Q22_6
+
+replace Veces_participacion = 0 if missing(Veces_participacion)
+
+gen fecha_nueva = d("10jul2016") - 18*365
+format fecha_nueva %td
+
+sort nacimiento
+drop if nacimiento ==. 
+
+
+gen X = fecha - 14075
+rename Veces_participacion Y
+
+
+gen T = 1 if X <= 0
+replace T = 0 if missing(T)
+twoway (scatter Y X if X>0)  (scatter Y X if X<0) , name(g1, replace) 
+mean Y, over(T)
+coefplot , vertical  name(g2, replace )
+ttest Y, by(T)
+graph combine g1 g2
+rdplot Y X, c(0) p(0) graph_options(name(g3, replace) legend(off))
+/* 	Este comando resume un poco los puntos en "bins" agrupando grandes porciones de datos en uno solo (por eso se ven menos puntos).
+	Adicionalmente, puede identificar si hay cambios estructurales dependiendo del grado del polinomio (opción "p(#)")
+	Ejemplo: polinomio de grado 1 (abajo) */ 
+twoway (scatter Y X if X>0) (lfit Y X if X>0)  (scatter Y X if X<0) (lfit Y X if X<0) , name(g4, replace) 
+
+/* Queremos buscar el mejor grado de polinomio */
+foreach p in 0 1 2 3 4{
+	rdplot Y X, c(0) p(`p') graph_options(name(poly_`p', replace) legend(off))
+}
+graph combine poly_0 poly_1 poly_2 poly_3 poly_4 
+
+
+**Para actividades civicas de froma agregada
+
+
+rdrobust Y X, c(0) p(4) h(10 10) kernel(uni)
+rdrobust Y X, c(0) p(4) h(20 20) kernel(uni)
+rdrobust Y X, c(0) p(4) h(30 30) kernel(uni)
+
+foreach h in 30 20 10 {
+	rdrobust Y X, c(0) p(4) h(`h' `h')
+	est store poly_h_`h'
+	rdplot Y X if (X>-`h' & X<`h'), c(0) p(0) graph_options(name(poly_h_`h', replace) legend(off))
+}
+est table poly_h* , p(%5.4f)
+graph combine poly_h_30 poly_h_20 poly_h_10 , xcommon ycommon 
+
+
+**Forma alternativa de observar la participación solamente por cada periodo
+
+local variables Q22_1 Q22_2 Q22_3 Q22_4 Q22_5 Q22_6
+
+foreach var of local variables {
+    
+	rdrobust `var' X, c(0) p(1) h(10 10) kernel(uni)
+    rdplot `var' X, c(0) p(1)  h(10 10) graph_options(name(poly_h_`var'_10, replace) legend(off))
+	
+}
+est table poly_h_* , p(%5.4f)
+graph combine poly_h_Q22_1_10 poly_h_Q22_2_10 poly_h_Q22_3_10 poly_h_Q22_4_10 poly_h_Q22_5_10 poly_h_Q22_6_10 , xcommon ycommon 
+
+
+***Para ancho de banda 20
+
+local variables Q22_1 Q22_2 Q22_3 Q22_4 Q22_5 Q22_6
+
+foreach var of local variables {
+    
+	rdrobust `var' X, c(0) p(1) h(20 20) kernel(uni)
+    rdplot `var' X, c(0) p(1)  h(20 20) graph_options(name(poly_h_`var'_20, replace) legend(off))
+	
+}
+est table poly_h_* , p(%5.4f)
+graph combine poly_h_Q22_1_20 poly_h_Q22_2_20 poly_h_Q22_3_20 poly_h_Q22_4_20 poly_h_Q22_5_20 poly_h_Q22_6_20 , xcommon ycommon 
+
+
+***Para ancho de banda 30
+
+local variables Q22_1 Q22_2 Q22_3 Q22_4 Q22_5 Q22_6
+
+foreach var of local variables {
+    
+	rdrobust `var' X, c(0) p(1) h(20 20) kernel(uni)
+    rdplot `var' X, c(0) p(1)  h(20 20) graph_options(name(poly_h_`var'_30, replace) legend(off))
+	
+}
+est table poly_h_* , p(%5.4f)
+graph combine poly_h_Q22_1_30 poly_h_Q22_2_30 poly_h_Q22_3_30 poly_h_Q22_4_30 poly_h_Q22_5_30 poly_h_Q22_6_30 , xcommon ycommon 
