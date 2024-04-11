@@ -54,6 +54,43 @@ foreach p in 0 1 2 3 4{
 	rdplot Y X, c(0) p(`p') graph_options(name(poly_`p', replace) legend(off))
 }
 graph combine poly_0 poly_1 poly_2 poly_3 poly_4 
+/* podemos tomar el valor del primer criterio: mserd */
+ereturn list 
+* Stata lo almacena como "e(h_mserd)" y con esto, podemos incluirlo en un loop para hacer todas las estimaciones con el ancho de banda óptimo para cada grado del polinomio.
+/* rdbwselect: nos ayuda a identificar cual es el Ancho de banda óptimo según el grado de polinomio */
+rdbwselect Y X, c(0) p(1) kernel(uni) all
+rdbwselect Y X, c(0) p(2) kernel(uni) all
+
+foreach p in 0 1 2 3 4{
+		rdbwselect Y X, c(0) p(`p') kernel(uni) all
+		local h=e(h_mserd)
+		rdrobust Y X, c(0) p(`p') h(`h' `h')
+		est store poly_`p' 
+		rdplot Y X if (X>-`h' & X<`h'), c(0) p(`p') h(`h' `h')  ci(99) shade graph_options(name(poly_`p', replace) title(poly_`p') legend(off))
+	}
+
+est table poly_0 poly_1 poly_2 poly_3 poly_4 , p(%5.4g)
+*Estos estimadores no son comparables, pero serían los mejores en cada grado de polinomio. Si queremos comparar entre los mismos, debemos mantener el mismo ancho de banda
+graph combine poly_0 poly_1 poly_2 poly_3 poly_4 , xcommon 
+
+
+/* Verificación de la manipulación del tratamiento
+*/
+ssc install rddensity
+ssc install lpdensity
+rddensity X , c(0) plot
+	* la H0: No hay manipulación vs. Ha: hay manipulación. 
+
+/* Nitida vs difusa (borrosa)
+  En el caso de que se sospeche que haya un problema de endogeneidad debido a que el hecho de estar por encima o por debajo del punto de corte se relacione con algo que no se tiene en cuenta en el modelo. 
+  Esto implica que la probabilidad de formar parte del tratamiento cambia abruptamente en la discnotinuidad, pero no pasa de 0 a 1 debido a que existe la posibilidad de que debajo de la discontinuidad haya unidades de observación recibiendo el tratamiento y después de la discontinuidad puede haber unidades de observación no recibiendo el tratamiento (i.e. existe la posibilidad de que existan never-takers y always-takers.
+  Para el ejemplo de la clase no es tan claro porque si o si tendrán un gobierno islamico o secular. Esto aplica para casos como becas basadas en la calificación de algún examen de admisión estandarizado, donde al final la beca no es obligatoria. 
+  
+ Imaginemos que igual puede pasar con nuestra base de datos. En ese sentido, se debe instrumentar la participación por alguna variable Z que se haya identificado como variable que puede explicar la parte exógena del hecho de pasar el punto de corte */
+ 
+rdrobust Y X, c(0) p(2) 
+rdrobust Y X, c(0) p(2)  fuzzy( hischshr1520m )
+
 
 
 **Para actividades civicas de froma agregada
@@ -110,5 +147,5 @@ foreach var of local variables {
     rdplot `var' X, c(0) p(1)  h(20 20) graph_options(name(poly_h_`var'_30, replace) legend(off))
 	
 }
-est table poly_h_* , p(%5.4f)
+est table poly_h* , p(%5.4f)
 graph combine poly_h_Q22_1_30 poly_h_Q22_2_30 poly_h_Q22_3_30 poly_h_Q22_4_30 poly_h_Q22_5_30 poly_h_Q22_6_30 , xcommon ycommon 
